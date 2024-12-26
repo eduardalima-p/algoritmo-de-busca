@@ -1,0 +1,99 @@
+import queue
+
+# Função para verificar vitória
+def verificar_vitoria(tabuleiro, jogador):
+    # Verificar linhas
+    for linha in tabuleiro:
+        if linha.count(jogador) == 3:
+            return True
+    
+    # Verificar colunas
+    for coluna in range(3):
+        if tabuleiro[0][coluna] == jogador and tabuleiro[1][coluna] == jogador and tabuleiro[2][coluna] == jogador:
+            return True
+    
+    # Verificar diagonais
+    if (tabuleiro[0][0] == jogador and tabuleiro[1][1] == jogador and tabuleiro[2][2] == jogador) or \
+       (tabuleiro[0][2] == jogador and tabuleiro[1][1] == jogador and tabuleiro[2][0] == jogador):
+        return True
+    
+    return False
+
+# Função para encontrar a melhor jogada
+def encontrar_melhor_jogada(tabuleiro, jogador):
+    fila = queue.Queue()
+    fila.put(tabuleiro)
+
+    while not fila.empty():
+        estado_atual = fila.get()
+
+        for linha in range(3):
+            for coluna in range(3):
+                if estado_atual[linha][coluna] == " ":
+                    tabuleiro_simulado = [linha[:] for linha in estado_atual]
+                    tabuleiro_simulado[linha][coluna] = jogador
+                    if verificar_vitoria(tabuleiro_simulado, jogador):
+                        return linha, coluna
+                    fila.put(tabuleiro_simulado)
+
+    return None  # Retorna None se não houver jogada vencedora
+
+# Função para exibir o tabuleiro
+def exibir_tabuleiro(tabuleiro):
+    for linha in tabuleiro:
+        print(" | ".join(linha))
+        print("-" * 9)
+
+# Função principal do jogo da velha
+def jogo_da_velha():
+    tabuleiro = [[" " for _ in range(3)] for _ in range(3)]
+    jogador = "X"
+    maquina = "O"
+
+    print("Bem-vindo ao Jogo da Velha!")
+    exibir_tabuleiro(tabuleiro)
+
+    for _ in range(9):  # No máximo 9 rodadas
+        # Jogador humano
+        print("Sua vez!")
+        while True:
+            try:
+                linha = int(input("Digite a linha (0-2): "))
+                coluna = int(input("Digite a coluna (0-2): "))
+                if tabuleiro[linha][coluna] == " ":
+                    tabuleiro[linha][coluna] = jogador
+                    break
+                else:
+                    print("Essa posição já está ocupada. Tente novamente.")
+            except (ValueError, IndexError):
+                print("Entrada inválida. Insira valores entre 0 e 2.")
+
+        exibir_tabuleiro(tabuleiro)
+        if verificar_vitoria(tabuleiro, jogador):
+            print("Parabéns! Você venceu!")
+            return
+
+        # Máquina
+        print("Vez da máquina...")
+        jogada = encontrar_melhor_jogada(tabuleiro, maquina)
+        if jogada:
+            tabuleiro[jogada[0]][jogada[1]] = maquina
+        else:
+            for linha in range(3):
+                for coluna in range(3):
+                    if tabuleiro[linha][coluna] == " ":
+                        tabuleiro[linha][coluna] = maquina
+                        break
+                else:
+                    continue
+                break
+
+        exibir_tabuleiro(tabuleiro)
+        if verificar_vitoria(tabuleiro, maquina):
+            print("A máquina venceu! Mais sorte na próxima vez.")
+            return
+
+    print("Empate! Nenhum vencedor.")
+
+# Iniciar o jogo
+jogo_da_velha()
